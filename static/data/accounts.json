@@ -1,0 +1,14 @@
+{
+    "accounts": [
+        {
+            "name": "Muhammad El-Gazouly",
+            "email": "Gazouly@email.com",
+            "password": "123456789"
+        },
+        {
+            "name": "John Doe",
+            "email": "j.doe@email.com",
+            "password": "123456789" 
+        }
+    ]
+}
