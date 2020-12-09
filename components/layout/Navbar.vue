@@ -22,7 +22,7 @@
       <span class="corps-name">Your Dashboard</span>
       <a-dropdown class="dropdown-list" :trigger="['click']">
         <a class="ant-dropdown-link">
-          <a-avatar icon="user" size="small" />&nbsp;Gazouly
+          <a-avatar icon="user" size="small" />&nbsp;{{ getUser }}
         </a>
         <a-menu slot="overlay" style="margin-right: 0">
           <a-menu-item>
@@ -30,7 +30,7 @@
           </a-menu-item>
           <a-divider style="padding: 0; margin: 0" />
           <a-menu-item>
-            <a style="cursor: pointer" @click="signOut">
+            <a style="cursor: pointer" @click="logout">
               <a-icon type="logout" />&nbsp;Logout
             </a>
           </a-menu-item>
@@ -43,7 +43,6 @@
 </template>
 
 <script>
-import { logout } from '@/core/Auth/auth.services'
 export default {
   props: {
     collapse: {
@@ -56,13 +55,18 @@ export default {
       collapsed: this.collapse,
     }
   },
+  computed: {
+    getUser() {
+      return this.$store.getters.getUser
+    },
+  },
   methods: {
     collapseSidebar() {
       this.collapsed = !this.collapsed
       this.$emit('changeCollapse', this.collapsed)
     },
-    signOut() {
-      logout()
+    logout() {
+      this.$store.dispatch('LOGOUT')
       this.$router.push('/')
     },
   },

@@ -56,6 +56,7 @@
 </template>
 
 <script>
+import { login } from '@/core/Auth/auth.services'
 export default {
   data() {
     return {
@@ -70,9 +71,21 @@ export default {
   methods: {
     handleSubmit(e) {
       e.preventDefault()
-      this.form.validateFields((err, values) => {
+      this.form.validateFields(async (err, values) => {
         if (!err) {
-          console.log(values)
+          this.isLoading = true
+          try {
+            await login(values)
+            this.isLoading = false
+            this.$router.push('/dashboard')
+          } catch (err) {
+            this.isLoading = false
+            this.$notification.open({
+              message: 'Something went wrong',
+              description: err.toString(),
+              icon: <a-icon type="close-circle" style="color: #f5222d" />,
+            })
+          }
         }
       })
     },

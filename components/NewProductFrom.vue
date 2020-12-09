@@ -46,16 +46,12 @@
                         rules: [
                           {
                             required: true,
-                            message: 'Please add your product name!',
+                            message: 'Please add your product price!',
                           },
                         ],
                       },
                     ]"
                     class="product-field-number"
-                    :formatter="
-                      (value) =>
-                        `E£ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                    "
                     :parser="(value) => value.replace(/\$\s?|(,*)/g, '')"
                     :min="0"
                     placeholder="Product Price"
@@ -107,9 +103,11 @@
               <a-col :xs="{ span: 24 }">
                 <a-form-item>
                   <a-button
+                    :disabled="isLoading"
                     class="add-product"
                     type="primary"
                     html-type="submit"
+                    :loading="isLoading"
                   >
                     Submit
                   </a-button>
@@ -125,6 +123,13 @@
 
 <script>
 export default {
+  props: {
+    product: {
+      type: Object,
+      required: false,
+      default: () => ({}),
+    },
+  },
   data() {
     return {
       form: this.$form.createForm(this, { name: 'new_product' }),
@@ -132,14 +137,59 @@ export default {
       image: null,
       description: null,
       price: 0,
+      isLoading: false,
+      editMode: false,
     }
+  },
+  watch: {
+    product: {
+      handler(newValue) {
+        if (Object.keys(newValue).length > 0) {
+          this.name = newValue.name
+          this.image = newValue.image
+          this.description = newValue.description
+          this.price = newValue.price
+          this.editMode = true
+        }
+      },
+      immediate: true,
+    },
   },
   methods: {
     handleSubmit(e) {
       e.preventDefault()
-      this.form.validateFields((err, values) => {
+      this.form.validateFields(async (err, values) => {
         if (!err) {
-          console.log('Received values of form: ', values)
+          this.isLoading = true
+          try {
+            if (!this.editMode) {
+              await this.$store.dispatch('ADD_PRODUCT', values)
+              this.$notification.open({
+                message: 'New Product',
+                description: 'Your product added successfully!',
+                icon: <a-icon type="check-circle" style="color: #52c41a" />,
+              })
+            } else {
+              await this.$store.dispatch('EDIT_PRODUCT', {
+                id: this.$route.query.id,
+                product: values,
+              })
+              this.$notification.open({
+                message: 'Edit Product',
+                description: 'Your product changed successfully!',
+                icon: <a-icon type="check-circle" style="color: #52c41a" />,
+              })
+            }
+            this.isLoading = false
+            this.$router.push('/dashboard')
+          } catch (err) {
+            this.isLoading = false
+            this.$notification.open({
+              message: 'Something went wrong',
+              description: err.message,
+              icon: <a-icon type="close-circle" style="color: #f5222d" />,
+            })
+          }
         }
       })
     },
@@ -169,6 +219,7 @@ export default {
         height: 48px;
         background: $color-primary-dark;
         border-color: $color-primary-dark;
+        color: #fff;
         &:hover {
           border-color: $color-secondary-light;
           background: $color-secondary-light;
@@ -184,7 +235,7 @@ export default {
         }
       }
       .product-field-number {
-        height: 48px;
+        height: 48px !important;
         width: 100%;
         border: 2px solid rgba($grey-color, 0.5);
         &:hover {
@@ -197,7 +248,7 @@ export default {
         }
         .ant-input-number-input-wrap {
           .ant-input-number-input {
-            height: 50px;
+            height: 45px !important;
             border: 2px solid $grey-color;
           }
         }

@@ -1,6 +1,6 @@
 <template>
   <div class="new-product">
-    <NewProductForm />
+    <NewProductForm :product="product" />
   </div>
 </template>
 
@@ -13,7 +13,16 @@ export default {
     NewProductForm,
   },
   data() {
-    return {}
+    return {
+      product: {},
+    }
+  },
+  async created() {
+    const product = await this.$store.dispatch(
+      'GET_PRODUCT',
+      this.$route.query.id
+    )
+    this.product = product
   },
 }
 </script>
